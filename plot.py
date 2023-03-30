@@ -132,7 +132,7 @@ if __name__ == '__main__':
     print("Plotting different metrics of the top 10 configurations", file = sys.stderr)
     for key in tqdm(OUTPUT_FIELDS):
         sns.set_style("darkgrid", {"grid.color": ".4", "grid.linestyle": ":"})
-        plt.figure(figsize= (10, 8))
+        plt.figure(figsize= (12, 8))
 
         ax = plt.gca()
         ax.yaxis.offsetText.set_visible(False)
@@ -147,6 +147,8 @@ if __name__ == '__main__':
         min_y_lim = -.5*data_vairations + min(y_data)
         plt.ylim(min_y_lim, max_y_lim)
         plt.bar(x_data, y_data)
+        for index, data in enumerate(y_data):
+            plt.text(index+.6, data , '{0:5.4e}'.format(data))
         plt.xlabel("configs")
         plt.ylabel(key)
         plt.xticks(x_data)
