@@ -148,7 +148,7 @@ if __name__ == '__main__':
         plt.ylim(min_y_lim, max_y_lim)
         plt.bar(x_data, y_data)
         for index, data in enumerate(y_data):
-            plt.text(index+.6, data , '{0:8}'.format(data))
+            plt.text(index+.6, data , '{0:10}'.format(data))
         plt.xlabel("configs")
         plt.ylabel(key)
         plt.xticks(x_data)
