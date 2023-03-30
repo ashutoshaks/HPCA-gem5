@@ -142,7 +142,11 @@ if __name__ == '__main__':
         ax.yaxis.set_major_formatter(y_formatter)
 
         y_data = [all_data[cnfg][key] for cnfg in Top10Configs]
-        plt.plot(x_data, y_data , marker= 'o')
+        data_vairations =  max(y_data) - min(y_data)
+        max_y_lim = .5*data_vairations + max(y_data)
+        min_y_lim = -.5*data_vairations + min(y_data)
+        plt.ylim(min_y_lim, max_y_lim)
+        plt.bar(x_data, y_data)
         plt.xlabel("configs")
         plt.ylabel(key)
         plt.xticks(x_data)
