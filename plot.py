@@ -40,7 +40,7 @@ import sys
 SAMPLE_DIRECTORY_NAME = '32-32-32kB-8kB-256kB-TournamentBP-128-16'
 
 FILE_NAME = 'stats.txt'
-PLOT_DIR = 'Plots'
+PLOT_DIR = 'plots'
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-d", help="Folder containing stats for different configurations", required=True)
@@ -53,17 +53,17 @@ PARAMS_TO_RECORD = {
     'system.cpu.ipc' : 'IPC',
     'system.cpu.branchPred.BTBHitRatio': 'BTBHitFraction', # need to print in % format
 
-    'system.cpu.dcache.overallMisses::total': 'miss_cycle_dcache',
-    'system.cpu.icache.overallMisses::total': 'miss_cycle_icache',
-    'system.l2cache.overallMisses::total': 'miss_cycle_l2cache',
+    'system.cpu.dcache.overallMisses::total': 'MissCycleDcache',
+    'system.cpu.icache.overallMisses::total': 'MissCycleIcache',
+    'system.l2cache.overallMisses::total': 'MissCycleL2cache',
 
-    'system.cpu.dcache.overallMissRate::total': 'miss_rate_dcache',
-    'system.cpu.icache.overallMissRate::total': 'miss_rate_icache',
-    'system.l2cache.overallMissRate::total': 'miss_rate_l2cache',
+    'system.cpu.dcache.overallMissRate::total': 'MissRateDcache',
+    'system.cpu.icache.overallMissRate::total': 'MissRateIcache',
+    'system.l2cache.overallMissRate::total': 'MissRateL2cache',
 
-    'system.cpu.dcache.overallAvgMissLatency::total': 'OverallAvgMissLatD',
-    'system.cpu.icache.overallAvgMissLatency::total': 'OverallAvgMissLatI',
-    'system.l2cache.overallAvgMissLatency::total': 'OverallAvgMissLatL2',    
+    'system.cpu.dcache.overallAvgMissLatency::total': 'OverallAvgMissLatDcache',
+    'system.cpu.icache.overallAvgMissLatency::total': 'OverallAvgMissLatIcache',
+    'system.l2cache.overallAvgMissLatency::total': 'OverallAvgMissLatL2cache',    
 
     'system.cpu.rob.reads' : 'ReadRob',
     'system.cpu.rob.writes' : 'WriteRob',
@@ -72,6 +72,19 @@ PARAMS_TO_RECORD = {
     'system.cpu.lsq0.forwLoads' : 'StoreLoadFwd',
     'system.cpu.lsq0.blockedByCache' : 'MemFailedBlockedByCache',
 }
+
+INT_PARAMS = set([
+    'system.cpu.commit.branchMispredicts',
+    'system.cpu.iew.predictedNotTakenIncorrect',
+    'system.cpu.iew.predictedTakenIncorrect',
+    'system.cpu.dcache.overallMisses::total',
+    'system.cpu.icache.overallMisses::total',
+    'system.l2cache.overallMisses::total',
+    'system.cpu.rob.reads',
+    'system.cpu.rob.writes',
+    'system.cpu.iew.lsqFullEvents',
+    'system.cpu.lsq0.forwLoads',
+    'system.cpu.lsq0.blockedByCache',])
 
 OUTPUT_FIELDS = [PARAMS_TO_RECORD[k] for k in PARAMS_TO_RECORD]
 assert(len(OUTPUT_FIELDS) == 20)
@@ -89,7 +102,10 @@ def extractDataForConfig(config_directory:str) -> dict:
         fields = re.sub('\s+',' ',line)
         fields = fields.split(" ")
         if fields[0] in PARAMS_TO_RECORD.keys():
-            data[PARAMS_TO_RECORD[fields[0]]] = float(fields[1])
+            if fields[0] in INT_PARAMS:
+                data[PARAMS_TO_RECORD[fields[0]]] = int(fields[1])
+            else:
+                data[PARAMS_TO_RECORD[fields[0]]] = float(fields[1])
     # import ipdb
     # ipdb.set_trace()
     for f in OUTPUT_FIELDS:
@@ -130,30 +146,35 @@ if __name__ == '__main__':
     x_data = list(range(1, num_of_data_points + 1))
 
     print("Plotting different metrics of the top 10 configurations", file = sys.stderr)
+    plt.rcParams.update({'font.size': 15})
     for key in tqdm(OUTPUT_FIELDS):
         sns.set_style("darkgrid", {"grid.color": ".4", "grid.linestyle": ":"})
-        plt.figure(figsize= (12, 8))
+        plt.figure(figsize= (19, 8))
+
+        plt.ticklabel_format(style='plain')
 
         ax = plt.gca()
-        ax.yaxis.offsetText.set_visible(False)
-        offset = ax.yaxis.get_major_formatter().get_offset()
+        # ax.yaxis.offsetText.set_visible(True)
+        # offset = ax.yaxis.get_major_formatter().get_offset()
 
-        y_formatter = mticker.ScalarFormatter(useOffset=False)
-        ax.yaxis.set_major_formatter(y_formatter)
+        ax.ticklabel_format(style='plain', axis='y')
+
+        # y_formatter = mticker.ScalarFormatter(useOffset=False)
+        # ax.yaxis.set_major_formatter(y_formatter)
 
         y_data = [all_data[cnfg][key] for cnfg in Top10Configs]
-        data_vairations =  max(y_data) - min(y_data)
-        max_y_lim = .5*data_vairations + max(y_data)
-        min_y_lim = -.5*data_vairations + min(y_data)
+        data_variations =  max(y_data) - min(y_data)
+        max_y_lim = .15*data_variations + max(y_data)
+        min_y_lim = -.5*data_variations + min(y_data)
         plt.ylim(min_y_lim, max_y_lim)
         plt.bar(x_data, y_data)
         for index, data in enumerate(y_data):
-            plt.text(index+.6, data , '{0:10}'.format(data))
+            plt.text(index + .5, data + 0.01*data_variations, '{0:10}'.format(data))
         plt.xlabel("configs")
         plt.ylabel(key)
         plt.xticks(x_data)
         plt.title(key + f" for top {num_of_data_points} configs by CPI")
-        plt.savefig(f'{PLOT_DIR}/' + key + ".png")
+        plt.savefig(f'{PLOT_DIR}/' + key + ".png", bbox_inches='tight')
 
     # plots in respective folders
     print(f"You can find the plots in the following directory :{PLOT_DIR}", file = sys.stderr)
