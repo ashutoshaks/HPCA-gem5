@@ -1,10 +1,9 @@
-The top 10 configurations w.r.t CPI values are
 32-64-64kB-16kB-512kB-TournamentBP-192-64 - 0.812704
 32-64-64kB-16kB-256kB-TournamentBP-192-64 - 0.812816
 32-64-32kB-16kB-256kB-TournamentBP-192-64 - 0.812877
 64-64-64kB-16kB-512kB-TournamentBP-192-64 - 0.813507
-32-64-32kB-16kB-512kB-TournamentBP-192-64 - 0.813558
 64-64-32kB-16kB-512kB-TournamentBP-192-64 - 0.813558
+32-64-32kB-16kB-512kB-TournamentBP-192-64 - 0.813558
 64-64-64kB-16kB-256kB-TournamentBP-192-64 - 0.81362
 64-64-32kB-16kB-256kB-TournamentBP-192-64 - 0.81367
 32-64-64kB-16kB-512kB-TournamentBP-128-64 - 0.814604
